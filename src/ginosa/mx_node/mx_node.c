@@ -13,6 +13,11 @@ char* concat(const char *s1, const char *s2) {
   return result;
 }
 
+static int randomNumber(int lowerLimit, int upperLimit) {
+  srand(time(NULL));
+  return lowerLimit + rand() % (upperLimit - lowerLimit);
+}
+
 void createSubscriber(mx_node* this, char* address, unsigned short int port, void (*onMessageReceived)(struct mx_node*, msg_t*)) {
   char* packetReceived;
   this->queueSubscribe = _new_client_udp (address, port, 512);

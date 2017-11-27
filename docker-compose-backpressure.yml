@@ -51,7 +51,7 @@ services:
       SUBSCRIBER_PORT: 1111
       PUBLISHER_ADDRESS: q2
       PUBLISHER_PORT: 2222
-      SLEEP: 1
+      SLEEP: 5
     volumes:
       - ./src:/opt/code
     command: ./bin/start_service.sh

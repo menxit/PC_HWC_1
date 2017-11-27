@@ -47,20 +47,14 @@ static char* sendMessage(struct client_udp* this, char* message) {
   char* result = malloc(this->maxMessageSize);
 
   //send the message
-  if (sendto(this->s, message, strlen(message), 0, (struct sockaddr *) this->si_other, *(socklen_t *)this->slen) == -1) {
-      die("sendto()");
-    }
-
-  //receive a reply and print it
-  //clear the buffer by filling null, it might have previously received data
-  memset(this->buf,'\0', this->maxMessageSize);
+  if (sendto(this->s, message, strlen(message) + 1, 0, (struct sockaddr *) this->si_other, *(socklen_t *)this->slen) == -1) {
+    die("sendto()");
+  }
 
   //try to receive some data, this is a blocking call
-  if (recvfrom(this->s, this->buf, this->maxMessageSize, 0, (struct sockaddr *) this->si_other, (socklen_t*)this->slen) == -1) {
-      die("recvfrom()");
-    }
-
-  memcpy(result, this->buf, this->maxMessageSize);
+  if (recvfrom(this->s, result, this->maxMessageSize, 0, (struct sockaddr *) this->si_other, (socklen_t*)this->slen) == -1) {
+    die("recvfrom()");
+  }
 
   return result;
 }
@@ -90,7 +84,6 @@ client_udp* _new_client_udp(char* serverHost, unsigned short int serverPort, uns
   this->si_other = malloc (sizeof (struct sockaddr_in));
   this->slen = malloc (sizeof (int));
   *this->slen = sizeof(*this->si_other);
-  this->buf = malloc (this->maxMessageSize);
   this->openConnection = openConnection;
   this->sendMessage = sendMessage;
   this->closeConnection = closeConnection;

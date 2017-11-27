@@ -30,7 +30,6 @@ void onMessageReceived(mx_node* this, msg_t* msg) {
 }
 
 int main(void) {
-  msg_t* m1 = msg_init("another message");
   mx_node* node = _new_mx_node(10);
   node->createPublisher(node, getAddressPublisher(), getPortPublisher());
   node->createSubscriber(node, getAddressSubscriber(), getPortSubscriber(), onMessageReceived);

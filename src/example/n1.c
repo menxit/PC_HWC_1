@@ -16,11 +16,19 @@ unsigned short getSleep() {
 }
 
 int main(void) {
-  msg_t* m1 = msg_init("a message");
+  msg_t** messages = malloc(sizeof(msg_t*)*3);
+  messages[0] = msg_init("ciao, mondo");
+  messages[1] = msg_init("hello, world");
+  messages[2] = msg_init("こんにちは世界");
+
   mx_node* node = _new_mx_node(10);
   node->createPublisher(node, getAddressPublisher(), getPortPublisher());
   while(1) {
     sleep(getSleep());
-    node->publish(node, m1);
+    srand(time(NULL));
+    int lowerLimit = 0;
+    int upperLimit = 2;
+    int r =  lowerLimit + rand() % (upperLimit - lowerLimit + 1);
+    node->publish(node, messages[r]);
   }
 }

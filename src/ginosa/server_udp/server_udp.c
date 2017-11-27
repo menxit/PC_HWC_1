@@ -28,7 +28,6 @@ static void closeConnection(server_udp* this) {
  */
 static void listenConnections(server_udp *this) {
 
-  char* buf;
 
   //create a UDP socket
   if ((this->s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
@@ -46,9 +45,12 @@ static void listenConnections(server_udp *this) {
   if(bind(this->s , (struct sockaddr*)this->si_me, sizeof(*this->si_me) ) == -1) {
     die("bind");
   }
+  char* buf = malloc(this->maxMessageSize);
   //keep listening for data
   while(1) {
-    buf = malloc(this->maxMessageSize);
+
+    // clean buffer
+    memset(buf, 0, this->maxMessageSize);
 
 		//try to receive some data, this is a blocking call
 		if ((this->recv_len = (int)recvfrom(this->s, buf, this->maxMessageSize, 0, (struct sockaddr *) this->si_other, (socklen_t*)this->slen)) == -1) {
@@ -58,7 +60,7 @@ static void listenConnections(server_udp *this) {
 		//print details of the client/peer and the data received
 		char* response = this->onMessageReceived(inet_ntoa(this->si_other->sin_addr), ntohs(this->si_other->sin_port), buf, this->other);
 
-		size_t responseSize = strlen(response)* sizeof(char);
+		size_t responseSize = strlen(response) + 1;
 		//now reply the client with the same data
 		if (sendto(this->s, response, responseSize, 0, (struct sockaddr*) this->si_other, *(socklen_t*)this->slen) == -1) {
 		  die("sendto()");
