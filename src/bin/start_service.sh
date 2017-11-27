@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+cd ..
+mkdir -p build
+cd build
+cmake ../code
+make
+./example/$EXEC

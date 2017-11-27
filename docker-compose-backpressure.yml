@@ -1,0 +1,72 @@
+version: '3'
+
+services:
+
+  q1:
+    build: .
+    tty: true
+    environment:
+      EXEC: queue
+      QUEUE_NAME: q1
+      PORT: 1111
+    volumes:
+      - ./src:/opt/code
+    command: ./bin/start_service.sh
+
+  q2:
+    build: .
+    tty: true
+    environment:
+      EXEC: queue
+      QUEUE_NAME: q2
+      PORT: 2222
+    volumes:
+      - ./src:/opt/code
+    command: ./bin/start_service.sh
+
+  n1:
+    build: .
+    tty: true
+    depends_on:
+      - q1
+      - q2
+    environment:
+      EXEC: n1
+      PUBLISHER_ADDRESS: q1
+      PUBLISHER_PORT: 1111
+      SLEEP: 1
+    volumes:
+      - ./src:/opt/code
+    command: ./bin/start_service.sh
+
+  n2:
+    build: .
+    tty: true
+    depends_on:
+      - q1
+      - q2
+    environment:
+      EXEC: n2
+      SUBSCRIBER_ADDRESS: q1
+      SUBSCRIBER_PORT: 1111
+      PUBLISHER_ADDRESS: q2
+      PUBLISHER_PORT: 2222
+      SLEEP: 1
+    volumes:
+      - ./src:/opt/code
+    command: ./bin/start_service.sh
+
+  n3:
+    build: .
+    tty: true
+    depends_on:
+      - q1
+      - q2
+    environment:
+      EXEC: n3
+      SUBSCRIBER_ADDRESS: q2
+      SUBSCRIBER_PORT: 2222
+      SLEEP: 1
+    volumes:
+      - ./src:/opt/code
+    command: ./bin/start_service.sh
