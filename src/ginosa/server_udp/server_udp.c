@@ -78,12 +78,11 @@ static void listenConnections(server_udp *this) {
  */
 server_udp* _new_server_udp(
   unsigned short int port,
-  unsigned short int maxMessageSize,
   char* (*onMessageReceived)(char*, unsigned short int, char*, void*),
   void* onMessageReceivedArgs) {
   server_udp* this = malloc (sizeof (server_udp));
   this->port = port;
-  this->maxMessageSize = maxMessageSize;
+  this->maxMessageSize = 512;
   this->si_me = malloc (sizeof (struct sockaddr_in));
   this->si_other = malloc (sizeof (struct sockaddr_in));
   this->slen = malloc(sizeof (int));

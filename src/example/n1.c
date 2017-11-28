@@ -22,14 +22,18 @@ int main(void) {
   messages[2] = msg_init("こんにちは世界");
   messages[3] = msg_init("ሰላም ልዑል");
 
+  long i = 0;
+
   mx_node* node = _new_mx_node(10);
   node->createPublisher(node, getAddressPublisher(), getPortPublisher());
   while(1) {
+    i++;
     sleep(getSleep());
     srand(time(NULL));
     int lowerLimit = 0;
     int upperLimit = 3;
     int r =  lowerLimit + rand() % (upperLimit - lowerLimit + 1);
     node->publish(node, messages[r]);
+    printf (" %d messaggi inviati\n", i);
   }
 }

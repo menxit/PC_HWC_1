@@ -27,17 +27,17 @@ Per i test sono state create tre "classi" di comodo, in particolare:
 Questa "classe" effettua una consumazione bloccante di un messaggio all'interno di un thread. Quando ho effettuato i
 test di codice concorrente ho avuto la necessità di ricevere un "segnale" che mi indicasse che la get_bloccante fosse
 stata terminata. Per questo motivo ho incluso in questo Consumatore un semaforo denominato messageIsConsumed.
-Questo semaforo nasce rosso, quando si supera la get_bloccante diventa verde. 
-
+Questo semaforo nasce rosso, quando si supera la get_bloccante diventa verde. E' stato utilizzato un semaforo invece 
+di un booleano, perché stiamo ipotizzando che tutte le operazioni siano divisibili.
 
 ## ProduttoreBloccanteDiUnMessaggio
 Questa "classe" effettua una produzione bloccante di un messaggio all'interno di un thread. Anche qui ho incluso
-un semaforo denominato messageIsProduces. Questo semaforo nasce rosso, quando si supera la put_bloccante diventa verde.
+un semaforo denominato messageIsProduced. Questo semaforo nasce rosso, quando si supera la put_bloccante diventa verde.
 
 
 ## Factory
 Durante i test ho trovato comodo avere a disposizione anche una "classe" Factory, questa permette di creare buffer vuoti,
-pieni, mezzi pieni. Inoltre consente di creare Consumatori, Produttori e messaggi.
+buffer pieni e buffer mezzi pieni. Inoltre consente di creare Consumatori, Produttori e messaggi.
 
 
 ## Back-Pressure
@@ -46,16 +46,15 @@ Per questo motivo ho realizzato due struct di utilità, denominate server_udp e 
 la complessità delle socket e forniscono un'interfaccia minimale, in particolare:
 
 ### server_udp
-In questo modo è possibile creare un server che rimane in ascolto di eventuali messaggi di grandezza massima pari a 512 bit
-sulla porta 8888.
+In questo modo è possibile creare un server che rimane in ascolto di eventuali messaggi sulla porta 8888.
 
 ```c
-server_udp* server = _new_server_udp(8888, 512, onMessageReceived, onMessageReceivedArgs);
+server_udp* server = _new_server_udp(8888, onMessageReceived, onMessageReceivedArgs);
 server->listenConnections(server);
 ```
 
-onMessageReceived è una funzione che viene richiamata nel momento in cui si riceve un messaggio, ad esempio. Questa funzione
-può anche restituire un valore. Il valore restituito viene inviato al client dal quale si è ricevuto il messaggio:
+onMessageReceived è una callback che viene richiamata nel momento in cui si riceve un messaggio. Questa funzione
+può anche restituire un valore (char*).
 ```c
 char* onMessageReceived(char* fromAddress, unsigned short int port, char* message, void* args) {
     printf("Messaggio inviato da %s:%d: %message", frromAddress, port, message);
@@ -67,13 +66,14 @@ Nel dettaglio, server_udp non è altro che un loop infinito. All'interno di ques
 bloccante che attende la ricezione di un messaggio. Quando la chiamata bloccante viene superata (e quindi quando è stato
 ricevuto un messaggio), viene invocata la funzione onMessageReceived, passandogli come parametro attuale le informazioni
 della connessione (indirizzo ip e porta del processo remoto) e il contenuto del messaggio stesso.
+Il valore restituito viene inviato al client dal quale si è ricevuto il messaggio.
 
 ### client_udp
 La controparte di server_udp è client_udp. Questa struct permette di instaurare una connessione con un server_udp e di
 inviargli dei messaggi.
 
 ```c
-client_udp* client = _new_client_udp("127.0.0.1", 8888, 512);
+client_udp* client = _new_client_udp("localhost", 8888);
 client->openConnection(client);
 ```
 
@@ -101,8 +101,8 @@ estrae messaggi con throughput lento, ad un certo punto si supera la dimensione 
 
 Serve quindi un meccanismo di regolazione, ovvero qualche cosa che comunichi a n1_veloce di produrre messaggi più lentamente.
 
-A questo punto l'idea è questa. Un nodo invia un messaggio alla coda. A questo punto può ricevere due risposte diverse: 
-MESSAGGIO_INSERITO ed ERRORE_MESSAGGIO_NON_INSERITO.
+L'idea dunque è la seguente: un nodo invia un messaggio alla coda, a questo punto può ricevere due risposte diverse: 
+MESSAGGIO_INSERITO oppure ERRORE_MESSAGGIO_NON_INSERITO.
 
 Se si riceve come risposta MESSAGGIO_INSERITO il produttore si occuperà di produrre il successivo messaggio e di inviarlo
 nuovamente alla coda. In caso contrario, il produttore prova a inviare nuovamente il messaggio, fino a quando non riceve
@@ -130,16 +130,42 @@ queue->start(queue);
 ```
 
 Nel seguente modo invece si può creare un nodo che produce infiniti messaggi e li invia sulla coda sull'indirizzo
-127.0.0.1 porta 8888.
+localhost con porta 8888.
 
 La funzione publish è bloccante. Questa funzione prende il content del messaggio, lo wrappa in un pacchetto di tipo
 INSERT e prova a inviare il pacchetto alla coda fino a che non riceve una risposta positiva.
 ```c
 mx_node* node = _new_mx_node(10);
 node->createPublisher(node, "127.0.0.1", 8888);
-while(1) {
-    msg_t* m1 = produci_messaggio();
-    node->publish(node, m1);
+msg_t* m1 = produci_messaggio();
+node->publish(node, m1);
+```
+
+In particolare questo è il codice della funzione publish. ERROR_RETRY_LATER è un'eccezione proveniente dalla coda
+che comunica al publisher che in quel momento la coda è piena e non può ricevere altri messaggi. A questo punto
+il publisher invece di continuare a produrre messaggi inutilmente, si blocca per un certo quantitativo di tempo, che sarà
+al massimo di tre secondi. Inizialmente il tempo di attesa sarà pari a 0, successivamente questo tempo inizia ad aumentare.
+In particolare l'incremento del timeout è esponenziale e tende asintoticamente a 3 secondi. Dopo MAX_NUMBER_ATTEMPTS 
+tentativi però il timeout viene azzerato e ricomincia a crescere. Questo meccanismo è stato utilizzato sia per limitare
+il numero di datagram inviati, sia per permettere un accesso democratico alla coda da parte degli N produttori.
+```c
+static int exponentialFunction(long x, int max) {
+  double SPEED = 0.1;
+  return (max/1000000*(1-pow(M_E, (-SPEED*x))))*1000000;
+}
+
+void publish(mx_node* this, msg_t* message) {
+  char* content;
+  unsigned long i = 0;
+  int MAX_NUMBER_ATTEMPTS = 10;
+  int MAX_TIMEOUT = 3000000;
+  do {
+    printf("[x]");
+    i = (i+1)%MAX_NUMBER_ATTEMPTS;
+    usleep(exponentialFunction(i, MAX_TIMEOUT));
+    char* msg = concat("INSERT$$$", message->content);
+    content = this->queuePublish->sendMessage(this->queuePublish, msg);
+  } while(strcmp(content, ERROR_RETRY_LATER) == 0);
 }
 ```
 

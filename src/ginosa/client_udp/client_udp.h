@@ -16,6 +16,6 @@ typedef struct client_udp {
   void (*closeConnection)(struct client_udp*);
 } client_udp;
 
-client_udp* _new_client_udp(char* serverHost, unsigned short int serverPort, unsigned short int maxMessageSize);
+client_udp *_new_client_udp (char *serverHost, unsigned short int serverPort);
 
 #endif

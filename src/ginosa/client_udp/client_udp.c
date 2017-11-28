@@ -23,16 +23,16 @@ static void die(char *s) {
  */
 static void openConnection(client_udp* this) {
   if ((this->s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
-      die("socket");
-    }
+    die("socket");
+  }
   memset((char *) this->si_other, 0, sizeof(*this->si_other));
   this->si_other->sin_family = AF_INET;
   this->si_other->sin_port = htons(this->port);
   struct hostent* hp = gethostbyname(this->host);
   if(hp == NULL) {
-      fprintf(stderr, "inet_aton() failed\n");
-      exit(1);
-    }
+    fprintf(stderr, "inet_aton() failed\n");
+    exit(1);
+  }
   memcpy(&this->si_other->sin_addr, hp->h_addr, hp->h_length);
 }
 
@@ -65,7 +65,7 @@ static char* sendMessage(struct client_udp* this, char* message) {
  * @param this
  */
 void closeConnection(client_udp* this) {
-  close (this->s);
+  close(this->s);
 }
 
 /**
@@ -76,11 +76,12 @@ void closeConnection(client_udp* this) {
  * @param maxMessageSize
  * @return
  */
-client_udp* _new_client_udp(char* serverHost, unsigned short int serverPort, unsigned short int maxMessageSize) {
+client_udp *_new_client_udp (char *serverHost, unsigned short int serverPort)
+{
   client_udp* this = malloc (sizeof (client_udp));
   this->host = serverHost;
   this->port = serverPort;
-  this->maxMessageSize = maxMessageSize;
+  this->maxMessageSize = 512;
   this->si_other = malloc (sizeof (struct sockaddr_in));
   this->slen = malloc (sizeof (int));
   *this->slen = sizeof(*this->si_other);

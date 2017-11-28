@@ -2,6 +2,7 @@
 #include <string.h>
 #include <printf.h>
 #include <stdio.h>
+#include <math.h>
 #include "mx_node.h"
 #include "../mx_queue/mx_queue.h"
 
@@ -21,7 +22,7 @@ static int randomNumber(int lowerLimit, int upperLimit) {
 
 void createSubscriber(mx_node* this, char* address, unsigned short int port, void (*onMessageReceived)(struct mx_node*, msg_t*)) {
   char* packetReceived;
-  this->queueSubscribe = _new_client_udp (address, port, 512);
+  this->queueSubscribe = _new_client_udp (address, port);
   this->queueSubscribe->openConnection(this->queueSubscribe);
   while(1) {
     packetReceived = this->queueSubscribe->sendMessage(this->queueSubscribe, "EXTRACT$$$");
@@ -33,18 +34,27 @@ void createSubscriber(mx_node* this, char* address, unsigned short int port, voi
 }
 
 void createPublisher(mx_node* this, char* address, unsigned short int port) {
-  this->queuePublish = _new_client_udp (address, port, 512);
+  this->queuePublish = _new_client_udp (address, port);
   this->queuePublish->openConnection(this->queuePublish);
+}
+
+static int exponentialFunction(long x, int max) {
+  double SPEED = 0.1;
+  return (max/1000000*(1-pow(M_E, (-SPEED*x))))*1000000;
 }
 
 void publish(mx_node* this, msg_t* message) {
   char* content;
+  unsigned long i = 0;
+  int MAX_NUMBER_ATTEMPTS = 10;
+  int MAX_TIMEOUT = 3000000;
   do {
-    usleep(100000+randomNumber(0, 100000));
+    printf("[x]");
+    i = (i+1)%MAX_NUMBER_ATTEMPTS;
+    usleep(exponentialFunction(i, MAX_TIMEOUT));
     char* msg = concat("INSERT$$$", message->content);
     content = this->queuePublish->sendMessage(this->queuePublish, msg);
   } while(strcmp(content, ERROR_RETRY_LATER) == 0);
-  printf("%s messaggio inserito\n", content);
 }
 
 mx_node* _new_mx_node(unsigned int bufferSize) {

@@ -18,11 +18,7 @@ typedef struct server_udp {
   void (*closeConnection)(struct server_udp*);
 } server_udp;
 
-server_udp* _new_server_udp(
-  unsigned short int port,
-  unsigned short int maxMessageSize,
-  char* (*onMessageReceived)(char*, unsigned short int, char*, void*),
-  void* onMessageReceivedArgs
-);
+server_udp *
+_new_server_udp (unsigned short int port, char *(*onMessageReceived) (char *, unsigned short, char *, void *), void *onMessageReceivedArgs);
 
 #endif
