@@ -13,12 +13,12 @@ typedef struct buffer_t {
   pc_sem_t VUOTE;
   pc_sem_t USO_D;
   pc_sem_t USO_T;
-  msg_t** data;
+  msg_t **data;
 } buffer_t;
 
-buffer_t* buffer_init(unsigned int maxSize);
+buffer_t *buffer_init(unsigned int maxSize);
 
-msg_t* put_bloccante(buffer_t* buffer, msg_t* msg);
+msg_t *put_bloccante(buffer_t *buffer, msg_t *msg);
 
 /**
  * Inserimento non bloccante: restituisce BUFFER_ERROR se pieno,
@@ -29,7 +29,7 @@ msg_t* put_bloccante(buffer_t* buffer, msg_t* msg);
  * @param msg
  * @return
  */
-msg_t* put_non_bloccante(buffer_t* buffer, msg_t* msg);
+msg_t *put_non_bloccante(buffer_t *buffer, msg_t *msg);
 
 /**
  * Estrazione bloccante: sospende se vuoto, quindi
@@ -38,7 +38,7 @@ msg_t* put_non_bloccante(buffer_t* buffer, msg_t* msg);
  * @param buffer
  * @return
  */
-msg_t* get_bloccante(buffer_t* buffer);
+msg_t *get_bloccante(buffer_t *buffer);
 
 /**
  * Estrazione non bloccante: restituisce BUFFER_ERROR se vuoto
@@ -47,13 +47,6 @@ msg_t* get_bloccante(buffer_t* buffer);
  * @param buffer
  * @return
  */
-msg_t* get_non_bloccante(buffer_t* buffer);
-
-/**
- * Deallocazione di un buffer
- *
- * @param buffer
- */
-void buffer_destroy(buffer_t* buffer);
+msg_t *get_non_bloccante(buffer_t *buffer);
 
 #endif

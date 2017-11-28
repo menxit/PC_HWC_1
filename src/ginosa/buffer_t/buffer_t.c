@@ -7,13 +7,12 @@
  * @param buffer
  * @return
  */
-static void incrementD(buffer_t* buffer) {
+static void incrementD(buffer_t *buffer) {
   unsigned int N = buffer->N;
   unsigned int D = buffer->D;
   unsigned int result = (D + 1) % N;
   buffer->D = result;
 }
-
 
 /**
  * Incrementa l'indice T di 1
@@ -21,7 +20,7 @@ static void incrementD(buffer_t* buffer) {
  * @param buffer
  * @return
  */
-static void incrementT(buffer_t* buffer) {
+static void incrementT(buffer_t *buffer) {
   unsigned int N = buffer->N;
   unsigned int T = buffer->T;
   buffer->T = (T + 1) % N;
@@ -36,8 +35,8 @@ static void incrementT(buffer_t* buffer) {
  * @param msg
  * @return
  */
-msg_t* put_non_bloccante(buffer_t* buffer, msg_t* msg) {
-  if(pc_sem_trywait(&buffer->VUOTE) != 0 || pc_sem_trywait(&buffer->USO_D) != 0) {
+msg_t *put_non_bloccante(buffer_t *buffer, msg_t *msg) {
+  if (pc_sem_trywait(&buffer->VUOTE) != 0 || pc_sem_trywait(&buffer->USO_D) != 0) {
     return BUFFER_ERROR;
   }
 
@@ -50,16 +49,16 @@ msg_t* put_non_bloccante(buffer_t* buffer, msg_t* msg) {
 }
 
 /**
- * Inserimento bloccante:
+ * Inserimento bloccante
  *
  * @param buffer
  * @param msg
  * @return
  */
-msg_t* put_bloccante(buffer_t* buffer, msg_t* msg) {
-  if(pc_sem_wait(&buffer->VUOTE) != 0 || pc_sem_wait(&buffer->USO_D) != 0) {
-      return BUFFER_ERROR;
-    }
+msg_t *put_bloccante(buffer_t *buffer, msg_t *msg) {
+  if (pc_sem_wait(&buffer->VUOTE) != 0 || pc_sem_wait(&buffer->USO_D) != 0) {
+    return BUFFER_ERROR;
+  }
 
   buffer->data[buffer->D] = msg;
   incrementD(buffer);
@@ -70,17 +69,17 @@ msg_t* put_bloccante(buffer_t* buffer, msg_t* msg) {
 }
 
 /**
- * Get non bloccate:
+ * Get non bloccate
  *
  * @param buffer
  * @return
  */
-msg_t* get_non_bloccante(buffer_t* buffer) {
-  if(pc_sem_trywait(&buffer->PIENE) != 0 || pc_sem_trywait(&buffer->USO_T) != 0) {
+msg_t *get_non_bloccante(buffer_t *buffer) {
+  if (pc_sem_trywait(&buffer->PIENE) != 0 || pc_sem_trywait(&buffer->USO_T) != 0) {
     return BUFFER_ERROR;
   }
 
-  msg_t* msg = buffer->data[buffer->T];
+  msg_t *msg = buffer->data[buffer->T];
   incrementT(buffer);
 
   pc_sem_post(&buffer->USO_T);
@@ -89,17 +88,17 @@ msg_t* get_non_bloccante(buffer_t* buffer) {
 }
 
 /**
- * Get bloccante:
+ * Get bloccante
  *
  * @param buffer
  * @return
  */
-msg_t* get_bloccante(buffer_t* buffer) {
-  if(pc_sem_wait(&buffer->PIENE) != 0 || pc_sem_wait(&buffer->USO_T) != 0) {
+msg_t *get_bloccante(buffer_t *buffer) {
+  if (pc_sem_wait(&buffer->PIENE) != 0 || pc_sem_wait(&buffer->USO_T) != 0) {
     return BUFFER_ERROR;
   }
 
-  msg_t* msg = buffer->data[buffer->T];
+  msg_t *msg = buffer->data[buffer->T];
   incrementT(buffer);
 
   pc_sem_post(&buffer->USO_T);
@@ -113,12 +112,12 @@ msg_t* get_bloccante(buffer_t* buffer) {
  * @param maxSize
  * @return
  */
-buffer_t* buffer_init(unsigned int maxSize) {
-  buffer_t* buffer = malloc(sizeof(buffer_t));
+buffer_t *buffer_init(unsigned int maxSize) {
+  buffer_t *buffer = malloc(sizeof(buffer_t));
   buffer->D = 0;
   buffer->T = 0;
   buffer->N = maxSize;
-  buffer->data = malloc (sizeof(struct msg_t**) * maxSize);
+  buffer->data = malloc(sizeof(struct msg_t *) * maxSize);
 
   // inizializzo semafori in stile cooperativo
   pc_sem_init(&buffer->PIENE, 0);

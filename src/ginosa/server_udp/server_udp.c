@@ -13,12 +13,16 @@ static void die(char *s) {
 }
 
 /**
- * Close the connection
+ * Chiude la connessione
  *
  * @param this
  */
-static void closeConnection(server_udp* this) {
+static void closeConnection(server_udp *this) {
   close(this->s);
+  free(this->si_me);
+  free(this->si_other);
+  free(this->slen);
+  free(this);
 }
 
 /**
@@ -27,8 +31,6 @@ static void closeConnection(server_udp* this) {
  * @param this
  */
 static void listenConnections(server_udp *this) {
-
-
   //create a UDP socket
   if ((this->s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
     die("socket");
@@ -42,32 +44,40 @@ static void listenConnections(server_udp *this) {
   this->si_me->sin_addr.s_addr = htonl(INADDR_ANY);
 
   //bind socket to port
-  if(bind(this->s , (struct sockaddr*)this->si_me, sizeof(*this->si_me) ) == -1) {
+  if (bind(this->s, (struct sockaddr *) this->si_me, sizeof(*this->si_me)) == -1) {
     die("bind");
   }
-  char* buf = malloc(this->maxMessageSize);
+  char *buf = malloc(this->maxMessageSize);
   //keep listening for data
-  while(1) {
+  while (1) {
 
     // clean buffer
     memset(buf, 0, this->maxMessageSize);
 
-		//try to receive some data, this is a blocking call
-		if ((this->recv_len = (int)recvfrom(this->s, buf, this->maxMessageSize, 0, (struct sockaddr *) this->si_other, (socklen_t*)this->slen)) == -1) {
-		  die("recvfrom()");
-		}
+    //try to receive some data, this is a blocking call
+    if ((this->recv_len = (int) recvfrom(this->s,
+                                         buf,
+                                         this->maxMessageSize,
+                                         0,
+                                         (struct sockaddr *) this->si_other,
+                                         (socklen_t *) this->slen)) == -1) {
+      die("recvfrom()");
+    }
 
-		//print details of the client/peer and the data received
-		char* response = this->onMessageReceived(inet_ntoa(this->si_other->sin_addr), ntohs(this->si_other->sin_port), buf, this->other);
+    //print details of the client/peer and the data received
+    char *response =
+      this->onMessageReceived(inet_ntoa(this->si_other->sin_addr), ntohs(this->si_other->sin_port), buf, this->other);
 
-		size_t responseSize = strlen(response) + 1;
-		//now reply the client with the same data
-		if (sendto(this->s, response, responseSize, 0, (struct sockaddr*) this->si_other, *(socklen_t*)this->slen) == -1) {
-		  die("sendto()");
-		}
+    size_t responseSize = strlen(response) + 1;
+
+    //now reply the client with the same data
+    if (sendto(this->s, response, responseSize, 0, (struct sockaddr *) this->si_other, *(socklen_t *) this->slen)
+      == -1) {
+      die("sendto()");
+    }
+
   }
 }
-
 
 /**
  * Create a new udp server
@@ -76,16 +86,16 @@ static void listenConnections(server_udp *this) {
  * @param maxMessageSize
  * @return
  */
-server_udp* _new_server_udp(
+server_udp *_new_server_udp(
   unsigned short int port,
-  char* (*onMessageReceived)(char*, unsigned short int, char*, void*),
-  void* onMessageReceivedArgs) {
-  server_udp* this = malloc (sizeof (server_udp));
+  char *(*onMessageReceived)(char *, unsigned short int, char *, void *),
+  void *onMessageReceivedArgs) {
+  server_udp *this = malloc(sizeof(server_udp));
   this->port = port;
   this->maxMessageSize = 512;
-  this->si_me = malloc (sizeof (struct sockaddr_in));
-  this->si_other = malloc (sizeof (struct sockaddr_in));
-  this->slen = malloc(sizeof (int));
+  this->si_me = malloc(sizeof(struct sockaddr_in));
+  this->si_other = malloc(sizeof(struct sockaddr_in));
+  this->slen = malloc(sizeof(int));
   *this->slen = sizeof(*this->si_me);
   this->other = onMessageReceivedArgs;
   this->listenConnections = listenConnections;

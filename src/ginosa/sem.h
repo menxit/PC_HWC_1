@@ -6,16 +6,15 @@
 
 typedef struct pc_sem_t {
 #ifdef __APPLE__
-  dispatch_semaphore_t    sem;
+  dispatch_semaphore_t sem;
 #else
   sem_t                   sem;
 #endif
 } pc_sem_t;
 
-
 static inline long pc_sem_init(pc_sem_t *s, unsigned int value) {
 #ifdef __APPLE__
-  dispatch_semaphore_t* sem = &s->sem;
+  dispatch_semaphore_t *sem = &s->sem;
 
   *sem = dispatch_semaphore_create(value);
 

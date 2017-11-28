@@ -8,10 +8,10 @@
  *
  * @return
  */
-msg_t* factory_createExpectedMessage () {
-  int* content = malloc(sizeof(int));
+msg_t *factory_createExpectedMessage() {
+  int *content = malloc(sizeof(int));
   *content = EXPECTED_MSG;
-  msg_t* msg = msg_init(content);
+  msg_t *msg = msg_init(content);
   return msg;
 }
 
@@ -21,8 +21,8 @@ msg_t* factory_createExpectedMessage () {
  * @param sizeBuffer
  * @return
  */
-buffer_t* factory_createEmptyBuffer(unsigned int sizeBuffer) {
-  buffer_t* b = buffer_init(sizeBuffer);
+buffer_t *factory_createEmptyBuffer(unsigned int sizeBuffer) {
+  buffer_t *b = buffer_init(sizeBuffer);
   return b;
 }
 
@@ -32,11 +32,11 @@ buffer_t* factory_createEmptyBuffer(unsigned int sizeBuffer) {
  * @param sizeBuffer
  * @return
  */
-buffer_t* factory_createFullBuffer(unsigned int sizeBuffer) {
-  buffer_t* b = buffer_init(sizeBuffer);
+buffer_t *factory_createFullBuffer(unsigned int sizeBuffer) {
+  buffer_t *b = buffer_init(sizeBuffer);
   int i = 0;
-  while(i < sizeBuffer) {
-    msg_t* msg = factory_createExpectedMessage();
+  while (i < sizeBuffer) {
+    msg_t *msg = factory_createExpectedMessage();
     put_bloccante(b, msg);
     i++;
   }
@@ -49,14 +49,14 @@ buffer_t* factory_createFullBuffer(unsigned int sizeBuffer) {
  * @param sizeBuffer
  * @return
  */
-buffer_t* factory_createHalfFullBuffer(unsigned int sizeBuffer) {
-  buffer_t* b = buffer_init(sizeBuffer);
+buffer_t *factory_createHalfFullBuffer(unsigned int sizeBuffer) {
+  buffer_t *b = buffer_init(sizeBuffer);
   int i = 0;
-  while(i < (sizeBuffer/2)) {
-      msg_t* msg = factory_createExpectedMessage();
-      put_bloccante(b, msg);
-      i++;
-    }
+  while (i < (sizeBuffer / 2)) {
+    msg_t *msg = factory_createExpectedMessage();
+    put_bloccante(b, msg);
+    i++;
+  }
   return b;
 }
 
@@ -66,7 +66,7 @@ buffer_t* factory_createHalfFullBuffer(unsigned int sizeBuffer) {
  * @param buffer
  * @return
  */
-ConsumatoreBloccanteDiUnMessaggio* factory_createConsumatoreBloccanteDiUnMessaggio(buffer_t* buffer) {
+ConsumatoreBloccanteDiUnMessaggio *factory_createConsumatoreBloccanteDiUnMessaggio(buffer_t *buffer) {
   return _new_ConsumatoreBloccanteDiUnMessaggio(buffer);
 }
 
@@ -76,7 +76,7 @@ ConsumatoreBloccanteDiUnMessaggio* factory_createConsumatoreBloccanteDiUnMessagg
  * @param buffer
  * @return
  */
-ProduttoreBloccanteDiUnMessaggio* factory_createProduttoreBloccanteDiUnMessaggio(buffer_t* buffer) {
+ProduttoreBloccanteDiUnMessaggio *factory_createProduttoreBloccanteDiUnMessaggio(buffer_t *buffer) {
   return _new_ProduttoreBloccanteDiUnMessaggio(buffer);
 }
 

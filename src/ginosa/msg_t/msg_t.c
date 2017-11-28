@@ -2,36 +2,35 @@
 #include "msg_t.h"
 
 /**
- * Destroy a message
+ * Distruggi un messaggio
  *
  * @param msg
  */
-void msg_destroy(msg_t* msg) {
+void msg_destroy(msg_t *msg) {
   free(msg->content);
   free(msg);
 }
 
 /**
- * Copy a message
+ * Copia un messaggio
  *
  * @param msg
  * @return
  */
-msg_t* msg_copy(msg_t* msg) {
-  msg_t* result = malloc(sizeof(msg_t));
-  // @TODO: potrebbe essere una buona idea copiare lo spazio di memoria, invece del riferimento.
+msg_t *msg_copy(msg_t *msg) {
+  msg_t *result = malloc(sizeof(msg_t));
   result->content = msg->content;
   return result;
 }
 
 /**
- * Init a message
+ * Costruttore di un messaggio
  *
  * @param content
  * @return
  */
-msg_t* msg_init(void* content) {
-  msg_t* msg = malloc(sizeof(msg_t));
+msg_t *msg_init(void *content) {
+  msg_t *msg = malloc(sizeof(msg_t));
   msg->content = content;
   msg->msg_destroy = msg_destroy;
   msg->msg_copy = msg_copy;

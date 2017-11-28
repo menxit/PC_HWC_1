@@ -9,18 +9,17 @@
 #define ERROR_PATTERN_NOT_FOUND "ERROR_PATTERN_NOT_FOUND"
 #define ERROR_RETRY_LATER "ERROR_RETRY_LATER"
 #define MESSAGE_INSERTED "MESSAGE_INSERTED"
-#define MESSAGE_EXTRACTED "MESSAGE_EXTRACTED"
 
 typedef struct mx_queue {
-  server_udp* server;
-  buffer_t* buffer;
-  char* name;
-  void (*start)(struct mx_queue* this);
-  char* extractedMessage;
-  char* (*onTryInsertMessage)(struct mx_queue* this, msg_t* message);
-  char* (*onExtractMessage)(struct mx_queue* this);
+  server_udp *server;
+  buffer_t *buffer;
+  char *name;
+  void (*start)(struct mx_queue *this);
+  char *extractedMessage;
+  char *(*onTryInsertMessage)(struct mx_queue *this, msg_t *message);
+  char *(*onExtractMessage)(struct mx_queue *this);
 } mx_queue;
 
-mx_queue* _new_mx_queue(unsigned short port, unsigned int maxSize, char* name);
+mx_queue *_new_mx_queue(unsigned short port, unsigned int maxSize, char *name);
 
 #endif

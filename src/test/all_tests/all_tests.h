@@ -1,14 +1,14 @@
 #ifndef HC_C1_ALL_TESTS_H
 #define HC_C1_ALL_TESTS_H
 
-void test_produzioneNonBloccateInUnBufferGiaPieno ();
-void test_consumazioneBloccanteDaUnBufferInizialmenteVuoto ();
-void test_produzioneDiUnSoloMessaggioInUnBufferVuoto ();
-void test_consumazioneDiUnSoloMessaggioDaUnBufferPieno ();
-void test_consumazioneDaUnBufferVuoto ();
-void test_produzioneInUnBufferPieno ();
-void test_consumazioneEProduzioneConcorrenteDiUnMessaggioDaUnBufferUnitarioPrimaIlConsumatore ();
-void test_consumazioneEProduzioneConcorrenteDiUnMessaggioInUnBufferUnitarioPrimaIlProduttore ();
+void test_produzioneNonBloccateInUnBufferGiaPieno();
+void test_consumazioneBloccanteDaUnBufferInizialmenteVuoto();
+void test_produzioneDiUnSoloMessaggioInUnBufferVuoto();
+void test_consumazioneDiUnSoloMessaggioDaUnBufferPieno();
+void test_consumazioneDaUnBufferVuoto();
+void test_produzioneInUnBufferPieno();
+void test_consumazioneEProduzioneConcorrenteDiUnMessaggioDaUnBufferUnitarioPrimaIlConsumatore();
+void test_consumazioneEProduzioneConcorrenteDiUnMessaggioInUnBufferUnitarioPrimaIlProduttore();
 void test_produzioneConcorrenteDiMoltepliciMessaggiInUnBufferUnitarioVuoto();
 void test_consumazioneConcorrenteDiMoltepliciMessaggiDaUnBufferUnitarioPieno();
 void test_produzioneConcorrenteDiMoltepliciMessaggiInUnBufferVuotoIlBufferNonSiRiempie();
