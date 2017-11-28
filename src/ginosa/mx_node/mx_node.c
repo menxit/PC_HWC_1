@@ -49,7 +49,7 @@ void publish(mx_node* this, msg_t* message) {
   int MAX_NUMBER_ATTEMPTS = 10;
   int MAX_TIMEOUT = 3000000;
   do {
-    printf("[x]");
+    //printf("[x]");
     i = (i+1)%MAX_NUMBER_ATTEMPTS;
     usleep(exponentialFunction(i, MAX_TIMEOUT));
     char* msg = concat("INSERT$$$", message->content);

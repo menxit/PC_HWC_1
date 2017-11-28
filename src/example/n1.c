@@ -34,6 +34,6 @@ int main(void) {
     int upperLimit = 3;
     int r =  lowerLimit + rand() % (upperLimit - lowerLimit + 1);
     node->publish(node, messages[r]);
-    printf (" %d messaggi inviati\n", i);
+    printf ("%d messaggi inviati\n", i);
   }
 }
