@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <printf.h>
+#include <stdio.h>
 #include "mx_node.h"
 #include "../mx_queue/mx_queue.h"
 
@@ -39,6 +40,7 @@ void createPublisher(mx_node* this, char* address, unsigned short int port) {
 void publish(mx_node* this, msg_t* message) {
   char* content;
   do {
+    usleep(100000+randomNumber(0, 100000));
     char* msg = concat("INSERT$$$", message->content);
     content = this->queuePublish->sendMessage(this->queuePublish, msg);
   } while(strcmp(content, ERROR_RETRY_LATER) == 0);

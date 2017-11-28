@@ -20,6 +20,7 @@ int main(void) {
   messages[0] = msg_init("ciao, mondo");
   messages[1] = msg_init("hello, world");
   messages[2] = msg_init("こんにちは世界");
+  messages[3] = msg_init("ሰላም ልዑል");
 
   mx_node* node = _new_mx_node(10);
   node->createPublisher(node, getAddressPublisher(), getPortPublisher());
@@ -27,7 +28,7 @@ int main(void) {
     sleep(getSleep());
     srand(time(NULL));
     int lowerLimit = 0;
-    int upperLimit = 2;
+    int upperLimit = 3;
     int r =  lowerLimit + rand() % (upperLimit - lowerLimit + 1);
     node->publish(node, messages[r]);
   }

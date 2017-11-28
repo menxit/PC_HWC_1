@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-rm -rf build
+cd ..
 mkdir -p build
 cd build
-cmake ../
+cmake ../code
 make
 ./test/HWC1_TEST
