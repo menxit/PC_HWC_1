@@ -6,6 +6,9 @@
 #include "mx_node.h"
 #include "../mx_queue/mx_queue.h"
 
+#define MAX_NUMBER_ATTEMPTS 10
+#define MAX_TIMEOUT 3000000
+
 /**
  * Concatena due stringhe
  *
@@ -23,6 +26,18 @@ static char *concat(const char *s1, const char *s2) {
 }
 
 /**
+ * Andamento esponenziale con asintoto orizzontale pari a max
+ *
+ * @param x
+ * @param max
+ * @return
+ */
+static int exponentialFunction(long x, int max) {
+  double SPEED = 0.1;
+  return (max / 1000000 * (1 - pow(M_E, (-SPEED * x)))) * 1000000;
+}
+
+/**
  * Crea un subscriber
  *
  * @param this
@@ -35,12 +50,18 @@ void createSubscriber(mx_node *this, char *address, unsigned short int port,
   char *packetReceived;
   this->queueSubscribe = _new_client_udp(address, port);
   this->queueSubscribe->openConnection(this->queueSubscribe);
+  int error, i = 0;
   while (1) {
-    packetReceived = this->queueSubscribe->sendMessage(this->queueSubscribe, "EXTRACT$$$");
-    msg_t *msg = msg_init(packetReceived);
-    if (strcmp(packetReceived, ERROR_RETRY_LATER) != 0) {
-      onMessageReceived(this, msg);
-    }
+    do {
+      i = (i + 1) % MAX_NUMBER_ATTEMPTS;
+      packetReceived = this->queueSubscribe->sendMessage(this->queueSubscribe, "EXTRACT$$$");
+      msg_t *msg = msg_init(packetReceived);
+      error = strcmp(packetReceived, ERROR_RETRY_LATER) == 0;
+      if (!error) {
+        onMessageReceived(this, msg);
+      }
+      usleep((unsigned int)exponentialFunction(i, MAX_TIMEOUT));
+    } while(error);
   }
 }
 
@@ -57,18 +78,6 @@ void createPublisher(mx_node *this, char *address, unsigned short int port) {
 }
 
 /**
- * Andamento esponenziale con asintoto orizzontale pari a max
- *
- * @param x
- * @param max
- * @return
- */
-static int exponentialFunction(long x, int max) {
-  double SPEED = 0.1;
-  return (max / 1000000 * (1 - pow(M_E, (-SPEED * x)))) * 1000000;
-}
-
-/**
  * Pubblica un messaggio
  *
  * @param this
@@ -77,8 +86,6 @@ static int exponentialFunction(long x, int max) {
 void publish(mx_node *this, msg_t *message) {
   char *content;
   unsigned long i = 0;
-  int MAX_NUMBER_ATTEMPTS = 10;
-  int MAX_TIMEOUT = 3000000;
   do {
     i = (i + 1) % MAX_NUMBER_ATTEMPTS;
     char *msg = concat("INSERT$$$", message->content);
