@@ -18,5 +18,6 @@ ConsumatoreBloccanteDiUnMessaggio *_new_ConsumatoreBloccanteDiUnMessaggio(buffer
   pc_sem_init(&c->messageIsConsumed, 0);
   pthread_t thread;
   pthread_create(&thread, NULL, task, c);
+  pthread_detach(thread);
   return c;
 }

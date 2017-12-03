@@ -19,5 +19,6 @@ ProduttoreBloccanteDiUnMessaggio *_new_ProduttoreBloccanteDiUnMessaggio(buffer_t
   pc_sem_init(&c->messageIsProduced, 0);
   pthread_t thread;
   pthread_create(&thread, NULL, task, c);
+  pthread_detach(thread);
   return c;
 }
