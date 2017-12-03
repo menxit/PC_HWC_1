@@ -91,7 +91,7 @@ mx_queue *_new_mx_queue(unsigned short port, unsigned int maxSize, char *name) {
   mx_queue *this = malloc(sizeof(mx_queue));
   this->name = name;
   this->buffer = buffer_init(maxSize);
-  this->server = _new_server_udp(port, onMessageReceived, this);
+  this->server = _new_server_udp(port, maxSize, onMessageReceived, this);
   this->onTryInsertMessage = onTryInsertMessage;
   this->onExtractMessage = onExtractMessage;
   this->start = start;
